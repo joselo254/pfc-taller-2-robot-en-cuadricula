@@ -17,7 +17,16 @@ class RobotCuadricula {
   // Punto 1 -------------------------------------------------------------------
 
   /** La dirección que queda tras girar noventa grados hacia el sentido dado. */
-  def girar(d: Direccion, s: Sentido): Direccion = ???
+  def girar(d: Direccion, s: Sentido): Direccion = (d,s) match {
+    case (Norte, Izquierda)=> Oeste
+    case (Norte, Derecha)=> Este
+    case (Sur, Izquierda)=> Este
+    case (Sur, Derecha)=> Oeste
+    case (Oeste, Izquierda)=> Sur
+    case (Oeste, Derecha) =>  Norte
+    case (Este, Izquierda)=> Norte
+    case (Este, Derecha)=> Sur
+  }
 
   // Punto 2 -------------------------------------------------------------------
 
