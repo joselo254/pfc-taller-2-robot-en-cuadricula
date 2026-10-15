@@ -196,4 +196,42 @@ class RobotCuadriculaTest extends AnyFunSuite {
   test("simplificar: el anidamiento interior también se reduce") {
     assert(simplificar(Repetir(3, Repetir(1, Avanzar(2)))) == Repetir(3, Avanzar(2)))
   }
+
+ //  5 pruebas del punto numero 1--------------------------
+  test("girar: Sur a la derecha da Oeste") {assert(girar(Sur, Derecha) == Oeste)}
+  test("girar: Norte  a la Izquierda da Oeste") {assert(girar(Norte, Izquierda) == Oeste)}
+
+  test("girar: un giro,su contrario y otro contrario da la primera orden") {
+    assert(girar(girar(girar(Norte, Derecha), Izquierda),Derecha) == Este)
+  }
+
+  test("girar: Norte dos veces a la derecha da Sur") {
+    assert(girar(girar(Norte, Derecha), Derecha) == Sur)
+  }
+  test("girar: verificar que girar en direcciones opuestas con el mismo sentido da resultados simétricos") {
+    assert(girar(Norte, Derecha) == Este && girar(Sur, Izquierda) == Este)
+  }
+  //  5 pruebas del punto numero 2--------------------------
+  test("ejecutar: avanzar al este desde una posición distinta de cero") {
+    assert(ejecutar(Estado(2, 3, Este), Avanzar(4)) == Estado(6, 3, Este))
+  }
+
+  test("ejecutar: secuencia larga con giros alternados y avance") {
+    val ordenes = Secuencia(List(Avanzar(3), Girar(Derecha), Avanzar(2), Girar(Derecha), Avanzar(1)))
+    assert(ejecutar(inicial, ordenes) == Estado(2, 2, Sur))
+  }
+
+  test("ejecutar: avanzar 10 al norte") {
+    assert(ejecutar(inicial, Avanzar(10)) == Estado(0, 10, Norte))
+  }
+
+  test("ejecutar: avanzar con cero pasos mantiene la misma posición y orientación") {
+    assert(ejecutar(Estado(4, 7, Oeste), Avanzar(0)) == Estado(4, 7, Oeste))
+  }
+  test("ejecutar: giro suelto hacia la izquierda desde el sur") {
+    assert(ejecutar(Estado(1, 1, Sur), Girar(Izquierda)) == Estado(1, 1, Este))
+  }
+
+
+
 }
