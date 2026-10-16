@@ -232,6 +232,24 @@ class RobotCuadriculaTest extends AnyFunSuite {
     assert(ejecutar(Estado(1, 1, Sur), Girar(Izquierda)) == Estado(1, 1, Este))
   }
 
+  //  5 pruebas del punto numero 3--------------------------
 
+  test("cuantasBasicas: la secuencia ejecuta cuatro básicas") {
+    val secuencia = Secuencia(List(Girar(Izquierda), Repetir(2,Avanzar(3)), Girar(Derecha)))
+    assert(cuantasBasicas(secuencia) == 4)
+  }
+  test("cuantasBasicas: repetir 3 veces avanzar y girar ejecuta 6 básicas") {
+    assert(cuantasBasicas(Repetir(3, Secuencia(List(Avanzar(1), Girar(Derecha))))) == 6)
+  }
+  test("cuantasBasicas: repetir 2 veces una secuencia vacía no ejecuta nada"){
+    assert(cuantasBasicas(Repetir(2, Secuencia(Nil))) == 0)
+  }
+  test("profundidad: la secuencia tiene profundidad 3") {
+    val secuencia = Secuencia(List(Girar(Izquierda), Repetir(2,Avanzar(3)), Girar(Derecha)))
+    assert(profundidad(secuencia) == 3)
+  }
+  test("profundidad: una secuencia de cuadrados tiene profundidad 4") {
+    assert(profundidad(Secuencia(List(cuadrado, cuadrado, cuadrado))) == 4)
+  }
 
 }
