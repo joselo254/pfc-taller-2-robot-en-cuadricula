@@ -68,10 +68,39 @@ class RobotCuadricula {
   // Punto 3 -------------------------------------------------------------------
 
   /** Cuántos Avanzar y Girar llega a ejecutar la orden, contando repeticiones. */
-  def cuantasBasicas(o: Orden): Int = ???
+  def cuantasBasicas(o: Orden): Int = o match {
+    case (Avanzar(n)) => 1
+
+    case (Girar(sentido)) => 1
+
+    case (Repetir(veces, orden)) =>
+      if (veces <= 0) 0
+    else {
+      veces * cuantasBasicas(orden)
+    }
+
+    case (Secuencia(Nil)) => 0
+
+    case (Secuencia(head :: tail)) =>
+      cuantasBasicas(head) + cuantasBasicas(Secuencia(tail))
+
+  }
 
   /** Niveles de anidamiento: una básica tiene 1, una compuesta uno más que la más honda. */
-  def profundidad(o: Orden): Int = ???
+  def profundidad(o: Orden): Int = o match {
+    case (Avanzar(n)) => 1
+
+    case (Girar(sentido)) => 1
+
+    case (Repetir(veces, orden)) =>
+      1 + profundidad(orden)
+
+    case (Secuencia(Nil)) => 1
+
+    case (Secuencia(ordenes)) =>
+      1 + ordenes.map(profundidad).max
+
+  }
 
   // Punto 4 -------------------------------------------------------------------
 
