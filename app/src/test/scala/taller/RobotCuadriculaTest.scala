@@ -212,6 +212,7 @@ class RobotCuadriculaTest extends AnyFunSuite {
   test("girar: verificar que girar en direcciones opuestas con el mismo sentido da resultados simétricos") {
     assert(girar(Norte, Derecha) == Este && girar(Sur, Izquierda) == Este)
   }
+
   //  5 pruebas del punto numero 2--------------------------
 
   test("ejecutar: avanzar al este desde una posición distinta de cero") {
@@ -254,7 +255,7 @@ class RobotCuadriculaTest extends AnyFunSuite {
     assert(profundidad(Secuencia(List(cuadrado, cuadrado, cuadrado))) == 4)
   }
 
-  //  5 pruebas del punto numero 3--------------------------
+  //  5 pruebas del punto numero 4--------------------------
 
   test("componer: crea una secuencia de las dos secuencias") {
     val secuencia1 = Secuencia(Avanzar(3) :: Girar(Izquierda) :: Nil)
