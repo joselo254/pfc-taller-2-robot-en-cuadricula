@@ -198,6 +198,7 @@ class RobotCuadriculaTest extends AnyFunSuite {
   }
 
  //  5 pruebas del punto numero 1--------------------------
+
   test("girar: Sur a la derecha da Oeste") {assert(girar(Sur, Derecha) == Oeste)}
   test("girar: Norte  a la Izquierda da Oeste") {assert(girar(Norte, Izquierda) == Oeste)}
 
@@ -212,6 +213,7 @@ class RobotCuadriculaTest extends AnyFunSuite {
     assert(girar(Norte, Derecha) == Este && girar(Sur, Izquierda) == Este)
   }
   //  5 pruebas del punto numero 2--------------------------
+
   test("ejecutar: avanzar al este desde una posición distinta de cero") {
     assert(ejecutar(Estado(2, 3, Este), Avanzar(4)) == Estado(6, 3, Este))
   }
@@ -252,4 +254,39 @@ class RobotCuadriculaTest extends AnyFunSuite {
     assert(profundidad(Secuencia(List(cuadrado, cuadrado, cuadrado))) == 4)
   }
 
+  //  5 pruebas del punto numero 3--------------------------
+
+  test("componer: crea una secuencia de las dos secuencias") {
+    val secuencia1 = Secuencia(Avanzar(3) :: Girar(Izquierda) :: Nil)
+    val secuencia2 = Secuencia(Repetir(2, Girar(Derecha)) :: Avanzar(5) :: Nil)
+    val resultado = Secuencia(secuencia1 :: secuencia2 :: Nil)
+    assert(componer(secuencia1, secuencia2) == resultado)
+  }
+  test("rutina: se fijan siete pasos y un giro, y se repite 2 veces") {
+    val secuencia = Repetir(2, Secuencia(Avanzar(7) :: Girar(Derecha) :: Nil))
+    assert(rutina(7)(Derecha)(2) == secuencia)
+  }
+  test("aplicarA: se gira a la izquierda en los estados") {
+    assert(aplicarA(List(Estado(2,-3,Oeste), Estado(5,1,Este), Estado(-3,-9,Norte)), Girar(Izquierda)) ==
+      List(Estado(2,-3,Sur), Estado(5,1,Norte), Estado(-3,-9,Oeste)))
+  }
+  test("transformar: los pasos se multiplican por tres y los giros cambian su sentido") {
+    val secuencia = Secuencia(List(Girar(Derecha), Avanzar(3), Girar(Izquierda)))
+    val resultado = transformar(secuencia, {
+      case (Avanzar(n)) => Avanzar(3 * n)
+      case (Girar(Izquierda)) => Girar(Derecha)
+      case (Girar(Derecha)) => Girar (Izquierda)
+    })
+    assert(resultado ==
+      Secuencia(List(Girar(Izquierda), Avanzar(9), Girar(Derecha))))
+  }
+  test("transformar: si hay giro a la izquierda se avanza 5 pasos") {
+    val secuencia = Secuencia(List(Girar(Izquierda), Girar(Derecha)))
+    val resultado = transformar(secuencia, {
+      case (Girar(Izquierda)) => Secuencia(List(Girar(Izquierda), Avanzar(5)))
+      case otro => otro
+    })
+    assert(resultado ==
+    Secuencia(List(Secuencia(List(Girar(Izquierda), Avanzar(5))), Girar(Derecha))))
+  }
 }
