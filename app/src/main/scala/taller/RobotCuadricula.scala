@@ -153,8 +153,13 @@ class RobotCuadricula {
       case Nil => Nil
       case orden :: resto if noHaceNada(orden) =>
         normalizar(resto)
-      case Avanzar(a) :: Avanzar(b) :: resto =>
-        normalizar(Avanzar(a + b) :: resto)
+      case Avanzar(a) :: resto =>
+        normalizar(resto) match {
+          case Avanzar(b) :: cola =>
+            normalizar(Avanzar(a + b) :: cola)
+          case restoNormalizado =>
+            Avanzar(a) :: restoNormalizado
+        }
       case orden :: resto =>
         orden :: normalizar(resto)
     }
