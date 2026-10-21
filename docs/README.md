@@ -14,12 +14,11 @@ Aquí van los dos informes que pide el enunciado, en Markdown:
   estado `e`, `ejecutar(e, o)` y `ejecutar(e, simplificar(o))` dejan el mismo
   estado. Se muestra regla por regla.
 
-Los dos archivos ya existen y traen un ejemplo de lo que se espera:
-`proceso.md` sigue la traza de `factorial(5)` con recursión de cola y dibuja la
-pila con `mermaid`; `correccion.md` argumenta por inducción estructural la
-corrección del factorial y del máximo de una lista, y con estado, invariante y
-transformación la de sus versiones iterativas. El informe del taller reemplaza
-ese contenido y sigue la misma forma sobre las funciones del enunciado.
+`proceso.md` y `correccion.md` contienen los informes de este taller.
+`proceso.md` explica el recorrido de las funciones y muestra trazas del estado
+del robot y de las órdenes pendientes. `correccion.md` argumenta con notación
+matemática la corrección de las funciones y demuestra, por casos, que
+`simplificar` conserva el resultado de ejecutar una orden.
 
 El tipo `Orden` está definido por sus cuatro alternativas, así que la
 inducción del ejemplo se traslada directamente. Hay un caso base por cada

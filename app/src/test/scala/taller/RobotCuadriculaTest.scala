@@ -290,4 +290,41 @@ class RobotCuadriculaTest extends AnyFunSuite {
     assert(resultado ==
     Secuencia(List(Secuencia(List(Girar(Izquierda), Avanzar(5))), Girar(Derecha))))
   }
+
+  //  5 pruebas adicionales del punto numero 5--------------------------
+
+  test("simplificar: elimina órdenes vacías y combina los avances que quedan contiguos") {
+    val orden = Secuencia(List(
+      Avanzar(4),
+      Secuencia(Nil),
+      Repetir(-2, Girar(Derecha)),
+      Avanzar(-1)
+    ))
+    assert(simplificar(orden) == Avanzar(3))
+  }
+
+  test("simplificar: repetir una secuencia que queda vacía también queda vacío") {
+    val orden = Repetir(4, Secuencia(List(Avanzar(5), Avanzar(-5))))
+    assert(simplificar(orden) == Secuencia(Nil))
+  }
+
+  test("simplificar: reduce el interior de una repetición sin cambiar sus veces") {
+    val orden = Repetir(3, Secuencia(List(
+      Secuencia(List(Avanzar(2), Avanzar(4))),
+      Avanzar(0),
+      Girar(Izquierda)
+    )))
+    assert(simplificar(orden) ==
+      Repetir(3, Secuencia(List(Avanzar(6), Girar(Izquierda)))))
+  }
+
+  test("simplificar: secuencia unitaria dentro de una repetición se reduce") {
+    assert(simplificar(Repetir(3, Secuencia(List(Girar(Derecha))))) ==
+      Repetir(3, Girar(Derecha)))
+  }
+
+  test("simplificar: al quitar órdenes nulas la secuencia queda en su única orden") {
+    val orden = Secuencia(List(Avanzar(0), Girar(Derecha), Secuencia(Nil)))
+    assert(simplificar(orden) == Girar(Derecha))
+  }
 }
