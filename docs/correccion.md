@@ -18,14 +18,14 @@ ejecutar $o$ desde $e$. En particular:
 
 $$
 \begin{aligned}
-E((x,y,d),\operatorname{Avanzar}(n))
+E((x,y,d),\text{Avanzar}(n))
   &= ((x,y)+n\,v(d),d),\\
-E((x,y,d),\operatorname{Girar}(s))
-  &= (x,y,\operatorname{girar}(d,s)),\\
-E(e,\operatorname{Secuencia}([])) &= e,\\
-E(e,\operatorname{Secuencia}(o::os))
-  &= E(E(e,o),\operatorname{Secuencia}(os)),\\
-E(e,\operatorname{Repetir}(k,o)) &=
+E((x,y,d),\text{Girar}(s))
+  &= (x,y,\text{girar}(d,s)),\\
+E(e,\text{Secuencia}([])) &= e,\\
+E(e,\text{Secuencia}(o::os))
+  &= E(E(e,o),\text{Secuencia}(os)),\\
+E(e,\text{Repetir}(k,o)) &=
   \begin{cases}
     e & k\leq 0,\\
     E^{k}(e,o) & k>0.
@@ -66,7 +66,7 @@ preserva la posición cuando se usa desde `ejecutar`.
 Se demuestra que, para todo estado $e$ y toda orden $o$,
 
 $$
-\operatorname{ejecutar}(e,o)=E(e,o).
+\text{ejecutar}(e,o)=E(e,o).
 $$
 
 La demostración se hace por casos sobre la estructura de `Orden`, con
@@ -84,7 +84,7 @@ mediante la misma suma o resta.
 **Caso `Girar(s)`.** El resultado que produce el programa es
 `Estado(x, y, girar(d, s))`. Por la corrección de `girar`, la orientación es
 la rotación especificada, y las coordenadas $x,y$ no cambian. Por tanto,
-coincide con $E((x,y,d),\operatorname{Girar}(s))$.
+coincide con $E((x,y,d),\text{Girar}(s))$.
 
 ### 3.2. Secuencia
 
@@ -92,21 +92,21 @@ Se procede por inducción sobre la lista de órdenes.
 
 **Caso base:** la lista es vacía. El programa devuelve el estado recibido.
 La especificación también define
-$E(e,\operatorname{Secuencia}([]))=e$.
+$E(e,\text{Secuencia}([]))=e$.
 
 **Paso inductivo:** sea la lista $o::os$. El programa ejecuta primero $o$ y
-obtiene $\operatorname{ejecutar}(e,o)$. Después ejecuta la secuencia $os$
+obtiene $\text{ejecutar}(e,o)$. Después ejecuta la secuencia $os$
 desde ese resultado. Por la hipótesis de inducción, procesar el resto equivale
 a su semántica, y por la hipótesis de corrección para $o$ el primer resultado
 es $E(e,o)$. Así:
 
 $$
 \begin{aligned}
-\operatorname{ejecutar}(e,\operatorname{Secuencia}(o::os))
-&= \operatorname{ejecutar}(
-    \operatorname{ejecutar}(e,o),\operatorname{Secuencia}(os))\\
-&= E(E(e,o),\operatorname{Secuencia}(os))\\
-&= E(e,\operatorname{Secuencia}(o::os)).
+\text{ejecutar}(e,\text{Secuencia}(o::os))
+&= \text{ejecutar}(
+    \text{ejecutar}(e,o),\text{Secuencia}(os))\\
+&= E(E(e,o),\text{Secuencia}(os))\\
+&= E(e,\text{Secuencia}(o::os)).
 \end{aligned}
 $$
 
@@ -124,7 +124,7 @@ inducción sobre $k$, las $k-1$ ejecuciones restantes equivalen a
 $E^{k-1}$; anteponer la primera ejecución produce $E^k$. Por tanto:
 
 $$
-\operatorname{ejecutar}(e,\operatorname{Repetir}(k,o))
+\text{ejecutar}(e,\text{Repetir}(k,o))
 =E^k(e,o).
 $$
 
@@ -137,15 +137,15 @@ La definición recursiva es:
 
 $$
 \begin{aligned}
-B(\operatorname{Avanzar}(n)) &= 1,\\
-B(\operatorname{Girar}(s)) &= 1,\\
-B(\operatorname{Repetir}(k,o)) &=
+B(\text{Avanzar}(n)) &= 1,\\
+B(\text{Girar}(s)) &= 1,\\
+B(\text{Repetir}(k,o)) &=
   \begin{cases}
     0 & k\leq0,\\
     k\,B(o) & k>0,
   \end{cases}\\
-B(\operatorname{Secuencia}([])) &= 0,\\
-B(\operatorname{Secuencia}(o::os)) &= B(o)+B(\operatorname{Secuencia}(os)).
+B(\text{Secuencia}([])) &= 0,\\
+B(\text{Secuencia}(o::os)) &= B(o)+B(\text{Secuencia}(os)).
 \end{aligned}
 $$
 
@@ -159,9 +159,9 @@ es $B(o)$ para toda orden.
 Por ejemplo:
 
 $$
-B(\operatorname{Repetir}(2,
-  \operatorname{Secuencia}([\operatorname{Avanzar}(3),
-  \operatorname{Girar}(\text{Izquierda})])))
+B(\text{Repetir}(2,
+  \text{Secuencia}([\text{Avanzar}(3),
+  \text{Girar}(\text{Izquierda})])))
 =2(1+1)=4.
 $$
 
@@ -171,11 +171,11 @@ Sea $D(o)$ la profundidad estructural de la orden. Según la definición:
 
 $$
 \begin{aligned}
-D(\operatorname{Avanzar}(n)) &= 1,\\
-D(\operatorname{Girar}(s)) &= 1,\\
-D(\operatorname{Repetir}(k,o)) &= 1+D(o),\\
-D(\operatorname{Secuencia}([])) &= 1,\\
-D(\operatorname{Secuencia}(os)) &= 1+\max_{o\in os}D(o)
+D(\text{Avanzar}(n)) &= 1,\\
+D(\text{Girar}(s)) &= 1,\\
+D(\text{Repetir}(k,o)) &= 1+D(o),\\
+D(\text{Secuencia}([])) &= 1,\\
+D(\text{Secuencia}(os)) &= 1+\max_{o\in os}D(o)
   \quad\text{si }os\ne[].
 \end{aligned}
 $$
@@ -200,7 +200,7 @@ El programa construye
 `Secuencia(List(o1, o2))`. Por la semántica de secuencia:
 
 $$
-E(e,\operatorname{componer}(o_1,o_2))
+E(e,\text{componer}(o_1,o_2))
 =E(E(e,o_1),o_2).
 $$
 
@@ -212,9 +212,9 @@ $o_2$, sin invertir el orden ni omitir alguna de las dos órdenes.
 Para valores $p$, $s$ y $k$, la función construye
 
 $$
-\operatorname{Repetir}\bigl(k,
-  \operatorname{Secuencia}([\operatorname{Avanzar}(p),
-  \operatorname{Girar}(s)])\bigr).
+\text{Repetir}\bigl(k,
+  \text{Secuencia}([\text{Avanzar}(p),
+  \text{Girar}(s)])\bigr).
 $$
 
 Por la corrección de `ejecutar` para secuencias, una iteración de la rutina
@@ -223,11 +223,11 @@ par de acciones se ejecuta $k$ veces si $k>0$, y no se ejecuta si $k\leq0$.
 La rutina representa, por tanto, la composición repetida indicada por sus
 argumentos.
 
-En particular, si $F(e)=E(E(e,\operatorname{Avanzar}(p)),
-\operatorname{Girar}(s))$, entonces:
+En particular, si $F(e)=E(E(e,\text{Avanzar}(p)),
+\text{Girar}(s))$, entonces:
 
 $$
-E(e,\operatorname{rutina}(p)(s)(k))=
+E(e,\text{rutina}(p)(s)(k))=
 \begin{cases}
 e & k\leq0,\\
 F^k(e) & k>0.
@@ -243,8 +243,8 @@ una `Orden`.
 Para una lista de estados $[e_1,\ldots,e_m]$, `map` produce
 
 $$
-[\operatorname{ejecutar}(e_1,o),\ldots,
-  \operatorname{ejecutar}(e_m,o)].
+[\text{ejecutar}(e_1,o),\ldots,
+  \text{ejecutar}(e_m,o)].
 $$
 
 Cada elemento se procesa de manera independiente, conserva su posición
@@ -285,8 +285,8 @@ construida por la propia función.
 Se demuestra la propiedad requerida:
 
 $$
-\forall o\in\operatorname{Orden}\;\forall e\in\operatorname{Estado}:
-\quad E(e,o)=E(e,\operatorname{simplificar}(o)).
+\forall o\in\text{Orden}\;\forall e\in\text{Estado}:
+\quad E(e,o)=E(e,\text{simplificar}(o)).
 $$
 
 La prueba es por inducción estructural sobre `Orden`. En los casos
@@ -368,21 +368,21 @@ no ejecuta su contenido y la secuencia vacía tampoco cambia el estado.
 inducción, para todo estado $e$:
 
 $$
-E(e,o)=E(e,\operatorname{simplificar}(o)).
+E(e,o)=E(e,\text{simplificar}(o)).
 $$
 
 Una repetición de una vez tiene el mismo efecto que ejecutar su contenido
 una vez, así que la sustitución conserva el resultado.
 
-**`Repetir(k,o)` con $k>1$.** Sea $o'=\operatorname{simplificar}(o)$.
+**`Repetir(k,o)` con $k>1$.** Sea $o'=\text{simplificar}(o)$.
 Por hipótesis de inducción, para cualquier estado $e'$,
 $E(e',o)=E(e',o')$. En cada una de las $k$ iteraciones se aplica esta
 igualdad al estado producido por la iteración anterior; por inducción sobre
 $k$, se obtiene:
 
 $$
-E(e,\operatorname{Repetir}(k,o))
-=E(e,\operatorname{Repetir}(k,o')).
+E(e,\text{Repetir}(k,o))
+=E(e,\text{Repetir}(k,o')).
 $$
 
 Si `noHaceNada(o')` es verdadero, $o'$ deja cualquier estado sin cambios.
@@ -418,7 +418,7 @@ transformaciones adicionales. Por inducción estructural se concluye que,
 para toda orden $o$ y todo estado $e$:
 
 $$
-\boxed{E(e,o)=E(e,\operatorname{simplificar}(o))}
+\boxed{E(e,o)=E(e,\text{simplificar}(o))}
 $$
 
 Por consiguiente, simplificar reduce la representación de una orden sin
