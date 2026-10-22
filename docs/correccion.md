@@ -182,11 +182,15 @@ $$
 
 El programa devuelve uno para cada orden básica y para la secuencia vacía.
 En `Repetir` añade uno a la profundidad de la orden interior. Para una
-secuencia no vacía calcula las profundidades de sus elementos, toma el
-máximo y suma uno. El caso vacío se separa antes de calcular el máximo, por
-lo que nunca se aplica `max` a una lista vacía. Estas ecuaciones coinciden
-con las ramas del `match`, así que la función calcula $D(o)$ por inducción
-estructural.
+secuencia no vacía, llama a `maxProfundidad`. Esta función auxiliar devuelve
+cero para una lista vacía. Para una lista `head :: tail`, calcula
+recursivamente $D(head)$ y el máximo de las profundidades de `tail`, y
+devuelve el mayor de ambos valores. Por inducción sobre la longitud de la
+lista, `maxProfundidad` devuelve exactamente la profundidad máxima de sus
+órdenes. La rama de `Secuencia(Nil)` devuelve uno directamente, así que no
+se usa el máximo de una lista vacía para calcular la profundidad de la
+secuencia. Para una lista no vacía, sumar uno al máximo implementa $D(o)$.
+Así, cada rama del `match` satisface la definición.
 
 La profundidad no depende de `veces`: el programa mide el nivel de
 anidamiento del árbol de órdenes. Por ello, incluso `Repetir(0, o)` tiene la
@@ -240,17 +244,20 @@ una `Orden`.
 
 ### 5.3. `aplicarA`
 
-Para una lista de estados $[e_1,\ldots,e_m]$, `map` produce
+Para una lista de estados $[e_1,\ldots,e_m]$, `aplicarA` se define
+recursivamente. Para la lista vacía devuelve la lista vacía. Para una cabeza
+$e_1$ y una cola $[e_2,\ldots,e_m]$, devuelve
+`ejecutar(e_1, o)` seguido del resultado de la llamada recursiva sobre la
+cola. Por inducción sobre la longitud de la lista, el resultado es:
 
 $$
 [\text{ejecutar}(e_1,o),\ldots,
   \text{ejecutar}(e_m,o)].
 $$
 
-Cada elemento se procesa de manera independiente, conserva su posición
-dentro de la lista y recibe la misma orden. La lista vacía produce una lista
-vacía. Por definición de `map`, el resultado satisface la especificación
-elemento por elemento.
+Cada estado se procesa de manera independiente, recibe la misma orden y
+conserva su posición en la lista. Por lo tanto, la función cumple la
+especificación elemento por elemento.
 
 ### 5.4. `transformar`
 
@@ -263,8 +270,10 @@ especificación por inducción estructural:
 * Para `Repetir(k,o)`, devuelve `Repetir(k, transformar(o, f))`: conserva
   $k$ y transforma el contenido.
 * Para `Secuencia(Nil)`, devuelve la secuencia vacía.
-* Para `Secuencia(o::os)`, transforma la cabeza y la cola y las vuelve a
-  unir en el mismo orden.
+* Para `Secuencia(o::os)`, transforma la cabeza y transforma recursivamente
+  `Secuencia(os)`. La llamada recursiva devuelve una secuencia; el programa
+  extrae de ella la lista transformada y antepone la cabeza transformada,
+  conservando el orden.
 
 Por tanto, las órdenes básicas originales se sustituyen exactamente una vez
 y la estructura compuesta original se recorre completa. No se afirma que
@@ -278,7 +287,9 @@ hace con `Secuencia(os)`. Por definición de las ramas de `transformar`, esta
 llamada devuelve otra `Secuencia`, incluso si la cola está vacía o si $f$
 produce órdenes compuestas para sus elementos. Por eso el patrón que extrae
 la lista transformada de esa secuencia corresponde a la estructura
-construida por la propia función.
+construida por la propia función. La inducción sobre la longitud de la lista
+garantiza que todos sus elementos se transforman exactamente una vez y que
+el orden relativo se conserva.
 
 ## 6. Punto 5: corrección de `simplificar`
 
@@ -291,7 +302,8 @@ $$
 
 La prueba es por inducción estructural sobre `Orden`. En los casos
 compuestos, se usa la hipótesis de inducción para cada orden interior. Las
-funciones auxiliares `noHaceNada` y `normalizar` se justifican primero.
+funciones auxiliares `noHaceNada`, `simplificarLista` y `normalizar` se
+justifican primero.
 
 ### 6.1. Órdenes que no hacen nada
 
@@ -310,46 +322,65 @@ $$
 Por tanto, sustituir cualquiera de esas órdenes por `Secuencia(Nil)` o
 eliminarla de una secuencia no cambia el estado resultante.
 
-### 6.2. Normalización de una secuencia
+### 6.2. Recorrido recursivo de la lista y normalización
 
-La función `normalizar` recibe una lista de órdenes que ya se simplificaron
-recursivamente. Se demuestra por inducción sobre la lista que reemplaza su
-secuencia por otra con la misma semántica.
+La función `simplificarLista` recorre la lista con dos casos. Para la lista
+vacía devuelve la lista vacía. Para `orden :: resto`, devuelve
+`simplificar(orden) :: simplificarLista(resto)`. Por inducción sobre la
+longitud de la lista, cada elemento de salida es la versión simplificada de
+su correspondiente elemento de entrada, y el orden de los elementos se
+conserva. Por la hipótesis de inducción estructural sobre `Orden`, cada
+reemplazo conserva el efecto de ejecutar ese elemento. En consecuencia, la
+secuencia completa antes y después de `simplificarLista` tiene el mismo
+resultado.
+
+La función `normalizar` recibe esa lista simplificada. Se demuestra por
+inducción sobre la lista que su resultado representa una secuencia con la
+misma semántica.
 
 **Lista vacía.** Devuelve la lista vacía. Ambas secuencias dejan el estado
 sin cambios.
 
-**Cabeza que no hace nada.** Si `noHaceNada` reconoce la cabeza, la función
-la descarta y normaliza el resto. Como la cabeza deja el estado igual,
-ejecutar la lista completa equivale a ejecutar solo el resto. La hipótesis
-de inducción asegura que normalizar el resto conserva su resultado.
+**Cabeza que no hace nada.** Si `noHaceNada` reconoce la cabeza, `normalizar`
+la descarta y se llama recursivamente con el resto. Como la cabeza deja el
+estado igual, ejecutar la lista completa equivale a ejecutar solo el resto.
+La hipótesis de inducción asegura que normalizar el resto conserva su
+resultado.
 
-**Dos avances consecutivos.** Para dos órdenes
-`Avanzar(a), Avanzar(b)`, la dirección no cambia entre ellas. Si la dirección
-es $d$, el desplazamiento total es
+**Cabeza `Avanzar(a)`.** El programa normaliza primero el resto. Si el
+resultado de esa llamada empieza por `Avanzar(b)`, los dos avances son
+contiguos en la lista normalizada. La dirección no cambia entre ellos; si la
+dirección es $d$, el desplazamiento conjunto es
 
 $$
 a\,v(d)+b\,v(d)=(a+b)\,v(d).
 $$
 
-Por ello, ejecutar ambas órdenes equivale a ejecutar `Avanzar(a + b)`.
-`normalizar` reemplaza el par por ese avance y vuelve a procesarlo junto con
-el resto. Si $a+b=0$, ese nuevo `Avanzar(0)` se reconoce como una orden que no
-hace nada en la siguiente llamada y se elimina. La lista de la llamada
-recursiva, formada por el avance combinado y el resto, es más corta que la
-lista original. La hipótesis de inducción se aplica a esa lista menor; junto
-con la equivalencia del par de avances, garantiza que el resultado completo
-se conserva.
+Por ello, sustituirlos por `Avanzar(a + b)` conserva el estado. El programa
+vuelve a normalizar la lista que contiene el avance combinado y la cola, de
+modo que el resultado también queda combinado con cualquier avance que le
+siga. Si $a+b=0$, el avance combinado se reconoce como una orden que no hace
+nada y se elimina. La lista recibida por esa llamada recursiva es más corta
+que la lista en la que se detectó el par; la hipótesis de inducción sobre la
+longitud garantiza que su normalización conserva el efecto.
+
+Si el resto normalizado no empieza por un avance, `normalizar` conserva
+`Avanzar(a)` delante de ese resto. La secuencia conserva su orden y su
+semántica por la hipótesis de inducción aplicada al resto.
 
 **Cualquier otra cabeza.** La función la conserva y normaliza la cola. La
 semántica de una secuencia ejecuta esa cabeza seguida de la cola; por la
 hipótesis de inducción, reemplazar la cola por su versión normalizada
-preserva el estado final.
+preserva el estado final. En la implementación, el resto se procesa primero
+en la rama de `Avanzar`; para las demás cabezas, se conserva la cabeza y se
+normaliza recursivamente la cola, con el mismo argumento de equivalencia.
 
-En cada rama, la recursión de `normalizar` termina: la rama general consume
-una orden, la rama de eliminación reduce la lista y la rama de combinación
-reemplaza dos avances por uno o por ninguno. Por lo tanto, la lista resultante
-es finita y semánticamente equivalente a la recibida.
+En cada rama, la recursión de `normalizar` termina. Las ramas de eliminación
+y de conservación procesan una lista estrictamente menor. En la rama de
+combinación, la llamada que normaliza el resto procesa una lista menor que la
+original, y la llamada posterior recibe una lista con un avance en lugar del
+par combinado, también menor que la lista original. Por tanto, la recursión
+termina y la lista resultante es semánticamente equivalente a la recibida.
 
 ### 6.3. Órdenes básicas
 
@@ -393,11 +424,11 @@ simplificado, ya probado equivalente.
 
 ### 6.5. Secuencias
 
-Para `Secuencia(os)`, primero se aplica `simplificar` a cada elemento. Por
-hipótesis de inducción, cada elemento se puede reemplazar por su versión
-simplificada sin cambiar el efecto desde ningún estado. Como la secuencia
-ejecuta sus elementos en orden, reemplazar cada elemento conserva el
-resultado de toda la lista.
+Para `Secuencia(os)`, primero se aplica `simplificarLista` recursivamente a
+cada elemento. Por hipótesis de inducción, cada elemento se puede reemplazar
+por su versión simplificada sin cambiar el efecto desde ningún estado. Como
+la secuencia ejecuta sus elementos en orden, reemplazar cada elemento
+conserva el resultado de toda la lista.
 
 Luego se aplica `normalizar`, cuya equivalencia se probó en la sección 6.2.
 Finalmente:
