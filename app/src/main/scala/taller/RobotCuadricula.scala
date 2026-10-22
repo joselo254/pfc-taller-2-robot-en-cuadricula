@@ -149,6 +149,12 @@ class RobotCuadricula {
       case _ => false
     }
 
+    def simplificarLista(ordenes: List[Orden]): List[Orden] = ordenes match {
+      case Nil => Nil
+      case orden :: resto =>
+        simplificar(orden) :: simplificarLista(resto)
+    }
+
     def normalizar(ordenes: List[Orden]): List[Orden] = ordenes match {
       case Nil => Nil
       case orden :: resto if noHaceNada(orden) =>
@@ -181,7 +187,7 @@ class RobotCuadricula {
             Repetir(veces, ordenSimplificada)
         }
       case Secuencia(ordenes) =>
-        normalizar(ordenes.map(simplificar)) match {
+        normalizar(simplificarLista(ordenes)) match {
           case Nil => Secuencia(Nil)
           case orden :: Nil => orden
           case simplificadas => Secuencia(simplificadas)
