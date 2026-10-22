@@ -69,37 +69,45 @@ class RobotCuadricula {
 
   /** Cuántos Avanzar y Girar llega a ejecutar la orden, contando repeticiones. */
   def cuantasBasicas(o: Orden): Int = o match {
-    case (Avanzar(n)) => 1
+    case Avanzar(_) => 1
 
-    case (Girar(sentido)) => 1
+    case Girar(_) => 1
 
-    case (Repetir(veces, orden)) =>
+    case Repetir(veces, orden) =>
       if (veces <= 0) 0
     else {
       veces * cuantasBasicas(orden)
     }
 
-    case (Secuencia(Nil)) => 0
+    case Secuencia(Nil) => 0
 
-    case (Secuencia(head :: tail)) =>
+    case Secuencia(head :: tail) =>
       cuantasBasicas(head) + cuantasBasicas(Secuencia(tail))
 
   }
 
   /** Niveles de anidamiento: una básica tiene 1, una compuesta uno más que la más honda. */
-  def profundidad(o: Orden): Int = o match {
-    case (Avanzar(n)) => 1
+  def profundidad(o: Orden): Int = {
+    def maxProfundidad(ordenes: List[Orden]): Int = ordenes match {
+      case Nil => 0
+      case head :: tail =>
+        val profundidadHead = profundidad(head)
+        val profundidadTail = maxProfundidad(tail)
+        if (profundidadHead > profundidadTail) profundidadHead
+        else profundidadTail
+    }
 
-    case (Girar(sentido)) => 1
+    o match {
+      case Avanzar(_) => 1
 
-    case (Repetir(veces, orden)) =>
-      1 + profundidad(orden)
+      case Girar(_) => 1
 
-    case (Secuencia(Nil)) => 1
+      case Repetir(_, orden) => 1 + profundidad(orden)
 
-    case (Secuencia(ordenes)) =>
-      1 + ordenes.map(profundidad).max
+      case Secuencia(Nil) => 1
 
+      case Secuencia(ordenes) => 1 + maxProfundidad(ordenes)
+    }
   }
 
   // Punto 4 -------------------------------------------------------------------
@@ -116,22 +124,20 @@ class RobotCuadricula {
   }
 
   /** La misma orden ejecutada sobre cada uno de los estados. */
-  def aplicarA(estados: List[Estado], o: Orden): List[Estado] = {
-    if (estados == Nil) estados
-    else{
-      estados.map(estado => ejecutar(estado, o))
-    }
+  def aplicarA(estados: List[Estado], o: Orden): List[Estado] = estados match {
+    case Nil => estados
+    case head :: tail => ejecutar(head, o) :: aplicarA(tail, o)
   }
 
   /** Reemplaza cada orden básica por f(orden), respetando la estructura de las compuestas. */
   def transformar(o: Orden, f: Orden => Orden): Orden = {
     o match {
-      case (Avanzar(n)) => f(o)
-      case (Girar(sentido)) => f(o)
-      case (Repetir(veces, orden)) =>
+      case Avanzar(_) => f(o)
+      case Girar(_) => f(o)
+      case Repetir(veces, orden) =>
         Repetir(veces, transformar(orden, f))
-      case (Secuencia(Nil)) => o
-      case (Secuencia(head :: tail)) =>
+      case Secuencia(Nil) => o
+      case Secuencia(head :: tail) =>
         val headTransformada = transformar(head, f)
         val Secuencia(tailTransformada) = transformar(Secuencia(tail), f)
         Secuencia(headTransformada :: tailTransformada)
