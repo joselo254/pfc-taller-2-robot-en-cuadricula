@@ -110,7 +110,7 @@ Traza de
 | 3 | `Girar(Derecha)` | `(1, 0, Oeste)` | `Repetir(1, Secuencia(List(Avanzar(1), Girar(Derecha))))` |
 | 4 | `Avanzar(1)` | `(0, 0, Oeste)` | `Secuencia(List(Girar(Derecha)))` |
 | 4 | `Girar(Derecha)` | `(0, 0, Norte)` | `Repetir(0, Secuencia(List(Avanzar(1), Girar(Derecha))))` |
-| Fin | `Repetir(0, ...)` no ejecuta su contenido | `(0, 0, Norte)` | `Secuencia(Nil)` |
+| Fin | `Repetir(0, ...)` no ejecuta su contenido y devuelve el estado | `(0, 0, Norte)` | Ninguna; la ejecución termina |
 
 Al finalizar, el robot regresa al origen y queda mirando al norte.
 
@@ -140,6 +140,13 @@ la cuenta total es $2 \times (1+1)=4$.
 Una orden básica tiene profundidad uno. Una repetición tiene una capa más
 que su orden interior. Una secuencia no vacía tiene una capa más que la
 mayor profundidad de sus elementos; la secuencia vacía tiene profundidad uno.
+
+Para calcular el máximo de una secuencia no vacía, `profundidad` define la
+función recursiva local `maxProfundidad`. Esta recorre la lista: devuelve cero
+para la lista vacía y, para una cabeza y una cola, calcula la profundidad de
+la cabeza, calcula recursivamente el máximo de la cola y conserva el valor
+mayor. Luego `profundidad` suma uno a ese máximo. La secuencia vacía se trata
+antes y devuelve uno directamente.
 
 Para el ejemplo anterior, `Avanzar(3)` y `Girar(Izquierda)` tienen profundidad
 1; la secuencia tiene profundidad $1+1=2$; y la repetición, profundidad
@@ -200,9 +207,11 @@ Al ejecutarla desde el inicio:
 
 ### 5.3. `aplicarA`
 
-`aplicarA(estados, o)` usa `map` para ejecutar la misma orden `o` sobre cada
-estado y conservar el orden de la lista. Para una lista vacía el resultado
-también es vacío.
+`aplicarA(estados, o)` recorre la lista mediante coincidencia de patrones. Si
+la lista está vacía, devuelve la lista vacía. Si tiene una cabeza y una cola,
+ejecuta `o` sobre la cabeza y antepone ese estado resultante a la llamada
+recursiva sobre la cola. De esta forma procesa cada estado una vez y conserva
+el orden original de la lista.
 
 Con `Avanzar(2)`:
 
@@ -216,12 +225,14 @@ Por tanto, la lista de salida es
 
 ### 5.4. `transformar`
 
-`transformar(o, f)` recorre la estructura. Si encuentra `Avanzar` o `Girar`,
-aplica `f` a esa orden básica. Si encuentra una repetición, mantiene el
-número de veces y transforma la orden interior. Si encuentra una secuencia,
-transforma sus elementos en el mismo orden; una secuencia vacía permanece
-vacía. La función puede producir cualquier `Orden` a partir de una básica,
-por lo que el resultado de aplicar `f` puede ser también una orden compuesta.
+`transformar(o, f)` recorre la estructura con `match` y recursión. Si
+encuentra `Avanzar` o `Girar`, aplica `f` a esa orden básica. Si encuentra
+una repetición, mantiene el número de veces y transforma la orden interior.
+Si encuentra una secuencia no vacía, transforma su cabeza y transforma
+recursivamente la cola como otra `Secuencia`, para luego reconstruir la
+lista en el mismo orden; una secuencia vacía permanece vacía. La función
+puede producir cualquier `Orden` a partir de una básica, por lo que el
+resultado de aplicar `f` puede ser también una orden compuesta.
 
 Si `f` duplica los pasos de cada avance y deja los giros sin cambio, el
 cuadrado de una casilla se transforma en:
@@ -243,17 +254,21 @@ Traza de ejecución de la orden transformada:
 ## 6. Punto 5: `simplificar`
 
 `simplificar(o)` procesa las órdenes interiores antes de normalizar una
-secuencia. Tiene dos funciones auxiliares locales:
+secuencia. Tiene tres funciones auxiliares locales:
 
 * `noHaceNada` reconoce `Avanzar(0)`, `Repetir` con cero o menos veces y
   `Secuencia(Nil)`.
-* `normalizar` recorre la lista de órdenes de izquierda a derecha. Descarta
-  las órdenes reconocidas como vacías; si encuentra dos avances consecutivos,
-  los sustituye por un avance cuya cantidad es la suma y vuelve a procesar
-  esa lista. En los demás casos conserva la primera orden y continúa con el
-  resto.
+* `simplificarLista` recorre la lista mediante coincidencia de patrones.
+  Para cada cabeza, llama a `simplificar` y antepone el resultado a la lista
+  que obtiene al procesar recursivamente la cola.
+* `normalizar` descarta las órdenes reconocidas como vacías. Para un avance,
+  normaliza primero el resto; si el resto normalizado empieza con otro
+  avance, suma sus pasos y vuelve a normalizar la lista combinada. Si no,
+  conserva el avance antes del resto. Así también combina avances que
+  quedaron contiguos tras eliminar órdenes vacías.
 
-Después de normalizar una lista, una lista vacía se representa como
+La secuencia se procesa primero con `simplificarLista` y luego con
+`normalizar`. Una lista vacía se representa como
 `Secuencia(Nil)`, una lista con un elemento se reduce a ese elemento y una
 lista con varios elementos se mantiene como `Secuencia`.
 
